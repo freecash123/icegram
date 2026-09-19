@@ -3,8 +3,5 @@
   "buildCommand": "pnpm build",
   "installCommand": "pnpm install",
   "outputDirectory": "dist/public",
-  "framework": "vite",
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/index.ts" }
-  ]
+  "framework": "vite"
 }
