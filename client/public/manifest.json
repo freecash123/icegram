@@ -1,0 +1,13 @@
+{
+  "name": "ICEGRAM — Connect. Chat. Create.",
+  "short_name": "Icegram",
+  "description": "A privacy-first communication space built around the identity you control.",
+  "start_url": "/app",
+  "display": "standalone",
+  "background_color": "#f6fbff",
+  "theme_color": "#10213e",
+  "orientation": "any",
+  "icons": [
+    { "src": "/icegram-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
