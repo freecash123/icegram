@@ -15,6 +15,13 @@
       "when": 1789844614996,
       "tag": "0001_grey_dagger",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1789852697673,
+      "tag": "0002_unique_ozymandias",
+      "breakpoints": true
     }
   ]
 }
