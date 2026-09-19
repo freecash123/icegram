@@ -5,6 +5,7 @@ import {
   contacts,
   conversationMembers,
   conversations,
+  iceboxItems,
   InsertUser,
   messages,
   notifications,
@@ -172,4 +173,35 @@ export async function upsertSession(userId: number, deviceName: string, userAgen
   } else {
     await db.insert(userSessions).values({ userId, deviceName, userAgent });
   }
+}
+
+export async function listIceboxItems(userId: number, query?: string, favoritesOnly = false) {
+  const db = await getDb();
+  if (!db) return [];
+  const term = query?.trim() ? `%${query.trim().replace(/[%_]/g, "\\$&")}%` : null;
+  const filters = [eq(iceboxItems.userId, userId)];
+  if (favoritesOnly) filters.push(eq(iceboxItems.favorite, true));
+  if (term) filters.push(or(like(iceboxItems.title, term), like(iceboxItems.body, term), like(iceboxItems.tags, term))!);
+  return db.select().from(iceboxItems).where(and(...filters)).orderBy(desc(iceboxItems.updatedAt)).limit(100);
+}
+
+export async function createIceboxItem(input: typeof iceboxItems.$inferInsert) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  const result = await db.insert(iceboxItems).values(input);
+  return (await db.select().from(iceboxItems).where(eq(iceboxItems.id, Number(result[0].insertId))).limit(1))[0];
+}
+
+export async function updateIceboxItem(userId: number, id: number, patch: Partial<typeof iceboxItems.$inferInsert>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  await db.update(iceboxItems).set(patch).where(and(eq(iceboxItems.id, id), eq(iceboxItems.userId, userId)));
+  return (await db.select().from(iceboxItems).where(and(eq(iceboxItems.id, id), eq(iceboxItems.userId, userId))).limit(1))[0];
+}
+
+export async function deleteIceboxItem(userId: number, id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  await db.delete(iceboxItems).where(and(eq(iceboxItems.id, id), eq(iceboxItems.userId, userId)));
+  return { success: true } as const;
 }

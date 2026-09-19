@@ -144,7 +144,27 @@ export const userSessions = mysqlTable("userSessions", {
   sessionUserIdx: index("user_sessions_user_idx").on(table.userId, table.lastSeenAt),
 }));
 
+export const iceboxItems = mysqlTable("iceboxItems", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  kind: mysqlEnum("kind", ["note", "link", "message", "file", "task"]).default("note").notNull(),
+  title: varchar("title", { length: 180 }).notNull(),
+  body: text("body"),
+  url: text("url"),
+  mediaUrl: text("mediaUrl"),
+  mediaKey: text("mediaKey"),
+  tags: varchar("tags", { length: 500 }),
+  favorite: boolean("favorite").default(false).notNull(),
+  openedAt: timestamp("openedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  userCreatedIdx: index("icebox_user_created_idx").on(table.userId, table.createdAt),
+  userFavoriteIdx: index("icebox_user_favorite_idx").on(table.userId, table.favorite),
+}));
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 export type Conversation = typeof conversations.$inferSelect;
 export type Message = typeof messages.$inferSelect;
+export type IceboxItem = typeof iceboxItems.$inferSelect;

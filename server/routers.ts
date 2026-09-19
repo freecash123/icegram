@@ -2,9 +2,9 @@ import { COOKIE_NAME } from "@shared/const";
 import { and, desc, eq, gt, inArray, isNull, or, sql } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { blocks, contacts, conversationMembers, conversations, messages, notifications, reports, stories, userSessions, users } from "../drizzle/schema";
+import { blocks, contacts, conversationMembers, conversations, iceboxItems, messages, notifications, reports, stories, userSessions, users } from "../drizzle/schema";
 import { storagePut } from "./storage";
-import { addNotification, ensureUserIdentity, findUsers, getConversationForUser, getDb, getOrCreateDirectConversation, isBlockedEitherWay, listConversations, listMessages, markConversationRead, upsertSession } from "./db";
+import { addNotification, createIceboxItem, deleteIceboxItem, ensureUserIdentity, findUsers, getConversationForUser, getDb, getOrCreateDirectConversation, isBlockedEitherWay, listConversations, listIceboxItems, listMessages, markConversationRead, updateIceboxItem, upsertSession } from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
@@ -124,6 +124,14 @@ export const appRouter = router({
       const stored = await storagePut(`icegram/${ctx.user.id}/${safeName}`, buffer, input.mimeType);
       return { ...stored, fileName: input.fileName, mimeType: input.mimeType, fileSize: buffer.byteLength };
     }),
+  }),
+
+  icebox: router({
+    list: protectedProcedure.input(z.object({ query: z.string().trim().max(80).optional(), favoritesOnly: z.boolean().default(false) }).optional()).query(({ ctx, input }) => listIceboxItems(ctx.user.id, input?.query, input?.favoritesOnly ?? false)),
+    create: protectedProcedure.input(z.object({ kind: z.enum(["note", "link", "message", "file", "task"]).default("note"), title: z.string().trim().min(1).max(180), body: z.string().max(20_000).optional(), url: z.string().url().optional(), mediaUrl: z.string().startsWith("/manus-storage/").optional(), mediaKey: z.string().optional(), tags: z.array(z.string().trim().min(1).max(32)).max(20).default([]) })).mutation(({ ctx, input }) => createIceboxItem({ ...input, userId: ctx.user.id, tags: input.tags.join(",") || null })),
+    favorite: protectedProcedure.input(z.object({ id: z.number().int().positive(), favorite: z.boolean() })).mutation(({ ctx, input }) => updateIceboxItem(ctx.user.id, input.id, { favorite: input.favorite })),
+    open: protectedProcedure.input(z.object({ id: z.number().int().positive() })).mutation(({ ctx, input }) => updateIceboxItem(ctx.user.id, input.id, { openedAt: new Date() })),
+    remove: protectedProcedure.input(z.object({ id: z.number().int().positive() })).mutation(({ ctx, input }) => deleteIceboxItem(ctx.user.id, input.id)),
   }),
 
   contacts: router({
