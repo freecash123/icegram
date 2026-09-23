@@ -49,13 +49,14 @@ app.use((error: unknown, _req: Request, res: Response, _next: NextFunction) => {
 export default async function handler(req: Request, res: Response) {
   try {
     const requestPath = (req.url ?? "").split("?", 1)[0];
-    if (requestPath === "/api/health" || req.path === "/api/health") {
+    const expressPath = req.path ?? "";
+    if (requestPath === "/api/health" || expressPath === "/api/health") {
       app(req, res);
       return;
     }
-    if (requestPath.startsWith("/api/trpc") || req.path.startsWith("/api/trpc")) await ensureTrpc();
-    if (requestPath.startsWith("/api/oauth") || req.path.startsWith("/api/oauth")) await ensureOAuth();
-    if (requestPath.startsWith("/api/storage") || req.path.startsWith("/api/storage")) await ensureStorage();
+    if (requestPath.startsWith("/api/trpc") || expressPath.startsWith("/api/trpc")) await ensureTrpc();
+    if (requestPath.startsWith("/api/oauth") || expressPath.startsWith("/api/oauth")) await ensureOAuth();
+    if (requestPath.startsWith("/api/storage") || expressPath.startsWith("/api/storage")) await ensureStorage();
     app(req, res);
   } catch (error) {
     console.error("[API] Function startup failed", error);
