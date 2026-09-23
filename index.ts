@@ -17,8 +17,8 @@ async function ensureTrpc() {
   trpcReady = (async () => {
     const [{ createExpressMiddleware }, { appRouter }, { createContext }] = await Promise.all([
       import("@trpc/server/adapters/express"),
-      import("./server/routers"),
-      import("./server/_core/context"),
+      import("./server/routers.js"),
+      import("./server/_core/context.js"),
     ]);
     app.use("/api/trpc", createExpressMiddleware({ router: appRouter, createContext }));
   })();
@@ -27,7 +27,7 @@ async function ensureTrpc() {
 
 async function ensureOAuth() {
   if (oauthReady) return oauthReady;
-  oauthReady = import("./server/_core/oauth").then(({ registerOAuthRoutes }) => {
+  oauthReady = import("./server/_core/oauth.js").then(({ registerOAuthRoutes }) => {
     registerOAuthRoutes(app);
   });
   return oauthReady;
@@ -35,7 +35,7 @@ async function ensureOAuth() {
 
 async function ensureStorage() {
   if (storageReady) return storageReady;
-  storageReady = import("./server/_core/storageProxy").then(({ registerStorageProxy }) => {
+  storageReady = import("./server/_core/storageProxy.js").then(({ registerStorageProxy }) => {
     registerStorageProxy(app);
   });
   return storageReady;
