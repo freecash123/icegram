@@ -1,7 +1,17 @@
+import "dotenv/config";
 import express from "express";
-import { createApiApp } from "./server/_core/index";
+import { createExpressMiddleware } from "@trpc/server/adapters/express";
+import { appRouter } from "./server/routers";
+import { createContext } from "./server/_core/context";
+import { registerOAuthRoutes } from "./server/_core/oauth";
+import { registerStorageProxy } from "./server/_core/storageProxy";
 
-// Keep the explicit Express import in the root entrypoint for Vercel detection.
-const app = createApiApp();
+const app = express();
+
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
+registerStorageProxy(app);
+registerOAuthRoutes(app);
+app.use("/api/trpc", createExpressMiddleware({ router: appRouter, createContext }));
 
 export default app;
