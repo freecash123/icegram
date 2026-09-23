@@ -1,13 +1,13 @@
-import { COOKIE_NAME } from "../shared/const";
+import { COOKIE_NAME } from "../shared/const.js";
 import { and, desc, eq, gt, inArray, isNull, or, sql } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { blocks, contacts, conversationMembers, conversations, iceboxItems, messages, notifications, reports, stories, userSessions, users } from "../drizzle/schema";
-import { storagePut } from "./storage";
-import { addNotification, createIceboxItem, deleteIceboxItem, ensureUserIdentity, findUsers, getConversationForUser, getDb, getOrCreateDirectConversation, isBlockedEitherWay, listConversations, listIceboxItems, listMessages, markConversationRead, updateIceboxItem, upsertSession } from "./db";
-import { getSessionCookieOptions } from "./_core/cookies";
-import { systemRouter } from "./_core/systemRouter";
-import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
+import { blocks, contacts, conversationMembers, conversations, iceboxItems, messages, notifications, reports, stories, userSessions, users } from "../drizzle/schema.js";
+import { storagePut } from "./storage.js";
+import { addNotification, createIceboxItem, deleteIceboxItem, ensureUserIdentity, findUsers, getConversationForUser, getDb, getOrCreateDirectConversation, isBlockedEitherWay, listConversations, listIceboxItems, listMessages, markConversationRead, updateIceboxItem, upsertSession } from "./db.js";
+import { getSessionCookieOptions } from "./_core/cookies.js";
+import { systemRouter } from "./_core/systemRouter.js";
+import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc.js";
 
 export const usernameSchema = z.string().trim().min(3).max(32).regex(/^[a-zA-Z0-9_]+$/, "Use only letters, numbers, and underscores");
 const base64Schema = z.string().min(1).max(28_000_000);
