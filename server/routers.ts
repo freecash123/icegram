@@ -4,7 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { blocks, contacts, conversationMembers, conversations, iceboxItems, messages, notifications, reports, stories, userSessions, users } from "../drizzle/schema.js";
 import { storagePut } from "./storage.js";
-import { addNotification, createIceboxItem, deleteIceboxItem, ensureUserIdentity, findUsers, getConversationForUser, getDb, getOrCreateDirectConversation, globalSearch, isBlockedEitherWay, listConversations, listIceboxItems, listMessages, markConversationRead, saveMessageToIcebox, updateIceboxItem, upsertSession } from "./db.js";
+import { addNotification, createIceboxItem, deleteIceboxItem, ensureUserIdentity, findUsers, getConversationForUser, getDb, getOrCreateDirectConversation, globalSearch, isBlockedEitherWay, listConversations, listIceboxItems, listMessages, markConversationRead, revokeOtherSessions, saveMessageToIcebox, updateIceboxItem, upsertSession } from "./db.js";
 import { getSessionCookieOptions } from "./_core/cookies.js";
 import { systemRouter } from "./_core/systemRouter.js";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc.js";
@@ -214,6 +214,7 @@ export const appRouter = router({
       await db.delete(userSessions).where(and(eq(userSessions.id, input.id), eq(userSessions.userId, ctx.user.id)));
       return { success: true };
     }),
+    revokeOthers: protectedProcedure.mutation(({ ctx }) => revokeOtherSessions(ctx.user.id)),
   }),
 
   admin: router({

@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, isNull, like, or, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, like, ne, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   blocks,
@@ -174,7 +174,12 @@ export async function upsertSession(userId: number, deviceName: string, userAgen
     await db.insert(userSessions).values({ userId, deviceName, userAgent });
   }
 }
-
+export async function revokeOtherSessions(userId: number, currentDeviceName = "Current browser") {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  await db.delete(userSessions).where(and(eq(userSessions.userId, userId), ne(userSessions.deviceName, currentDeviceName)));
+  return { success: true } as const;
+}
 export async function globalSearch(userId: number, query: string) {
   const db = await getDb();
   if (!db || !query.trim()) return { icebox: [], messages: [] };
