@@ -175,6 +175,36 @@ export async function upsertSession(userId: number, deviceName: string, userAgen
   }
 }
 
+export async function globalSearch(userId: number, query: string) {
+  const db = await getDb();
+  if (!db || !query.trim()) return { icebox: [], messages: [] };
+  const term = `%${query.trim().replace(/[%_]/g, "\\$&")}%`;
+  const icebox = await db.select().from(iceboxItems)
+    .where(and(eq(iceboxItems.userId, userId), or(like(iceboxItems.title, term), like(iceboxItems.body, term), like(iceboxItems.tags, term))))
+    .orderBy(desc(iceboxItems.updatedAt)).limit(50);
+  const messagesFound = await db.select({ message: messages, conversation: conversations, sender: { id: users.id, name: users.name, displayName: users.displayName, username: users.username } })
+    .from(messages)
+    .innerJoin(conversations, eq(conversations.id, messages.conversationId))
+    .innerJoin(users, eq(users.id, messages.senderId))
+    .innerJoin(conversationMembers, eq(conversationMembers.conversationId, messages.conversationId))
+    .where(and(eq(conversationMembers.userId, userId), or(like(messages.body, term), like(messages.fileName, term))))
+    .orderBy(desc(messages.createdAt)).limit(50);
+  return { icebox, messages: messagesFound };
+}
+
+export async function saveMessageToIcebox(userId: number, messageId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not configured");
+  const rows = await db.select({ message: messages, conversation: conversations })
+    .from(messages)
+    .innerJoin(conversations, eq(conversations.id, messages.conversationId))
+    .innerJoin(conversationMembers, eq(conversationMembers.conversationId, messages.conversationId))
+    .where(and(eq(messages.id, messageId), eq(conversationMembers.userId, userId))).limit(1);
+  const row = rows[0];
+  if (!row) throw new Error("Message not found");
+  return createIceboxItem({ userId, kind: "message", title: row.message.body?.slice(0, 180) || row.message.fileName || "Saved message", body: row.message.body || null, mediaUrl: row.message.mediaUrl || null, mediaKey: row.message.mediaKey || null, tags: "message" });
+}
+
 export async function listIceboxItems(userId: number, query?: string, favoritesOnly = false) {
   const db = await getDb();
   if (!db) return [];

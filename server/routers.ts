@@ -4,7 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { blocks, contacts, conversationMembers, conversations, iceboxItems, messages, notifications, reports, stories, userSessions, users } from "../drizzle/schema.js";
 import { storagePut } from "./storage.js";
-import { addNotification, createIceboxItem, deleteIceboxItem, ensureUserIdentity, findUsers, getConversationForUser, getDb, getOrCreateDirectConversation, isBlockedEitherWay, listConversations, listIceboxItems, listMessages, markConversationRead, updateIceboxItem, upsertSession } from "./db.js";
+import { addNotification, createIceboxItem, deleteIceboxItem, ensureUserIdentity, findUsers, getConversationForUser, getDb, getOrCreateDirectConversation, globalSearch, isBlockedEitherWay, listConversations, listIceboxItems, listMessages, markConversationRead, saveMessageToIcebox, updateIceboxItem, upsertSession } from "./db.js";
 import { getSessionCookieOptions } from "./_core/cookies.js";
 import { systemRouter } from "./_core/systemRouter.js";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc.js";
@@ -54,6 +54,7 @@ export const appRouter = router({
 
   search: router({
     users: protectedProcedure.input(z.object({ query: z.string().trim().min(1).max(80) })).query(({ ctx, input }) => findUsers(input.query, ctx.user.id)),
+    all: protectedProcedure.input(z.object({ query: z.string().trim().min(1).max(80) })).query(({ ctx, input }) => globalSearch(ctx.user.id, input.query)),
   }),
 
   chat: router({
@@ -132,6 +133,7 @@ export const appRouter = router({
     favorite: protectedProcedure.input(z.object({ id: z.number().int().positive(), favorite: z.boolean() })).mutation(({ ctx, input }) => updateIceboxItem(ctx.user.id, input.id, { favorite: input.favorite })),
     open: protectedProcedure.input(z.object({ id: z.number().int().positive() })).mutation(({ ctx, input }) => updateIceboxItem(ctx.user.id, input.id, { openedAt: new Date() })),
     remove: protectedProcedure.input(z.object({ id: z.number().int().positive() })).mutation(({ ctx, input }) => deleteIceboxItem(ctx.user.id, input.id)),
+    saveMessage: protectedProcedure.input(z.object({ messageId: z.number().int().positive() })).mutation(({ ctx, input }) => saveMessageToIcebox(ctx.user.id, input.messageId)),
   }),
 
   contacts: router({
