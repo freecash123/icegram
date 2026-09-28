@@ -115,3 +115,16 @@
 }
 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; } }
+
+/* ICEGRAM Theme Studio runtime preferences. */
+:root { --icegram-accent: #279fbe; --icegram-bubble-mine: #183b70; --icegram-bubble-theirs: #ffffff; --icegram-font-scale: 1; }
+:root[data-icegram-wallpaper="aurora"] .bg-\[\#f7fbfe\] { background: radial-gradient(circle at 12% 0%, color-mix(in srgb, var(--icegram-accent) 18%, transparent), transparent 42%), var(--background) !important; }
+:root[data-icegram-wallpaper="midnight"] .bg-\[\#f7fbfe\] { background: #071321 !important; }
+:root[data-icegram-wallpaper="mesh"] .bg-\[\#f7fbfe\] { background: radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--icegram-accent) 30%, transparent), transparent 40%), radial-gradient(circle at 100% 100%, #19395f, #071a33) !important; }
+:root[data-icegram-density="compact"] .rounded-2xl { border-radius: .75rem; }
+:root[data-icegram-density="spacious"] .rounded-2xl { border-radius: 1.25rem; }
+:root.icegram-no-transparency .backdrop-blur-sm, :root.icegram-no-transparency .backdrop-blur { backdrop-filter: none !important; background-color: var(--card) !important; }
+:root.icegram-high-contrast { --muted-foreground: oklch(0.38 0.04 235); --border: oklch(0.62 0.03 230); --ring: var(--icegram-accent); }
+:root.dark.icegram-high-contrast { --foreground: oklch(0.98 0.01 215); --muted-foreground: oklch(0.82 0.03 220); --border: oklch(0.7 0.03 230); }
+:root.icegram-reduce-motion *, :root.icegram-reduce-motion *::before, :root.icegram-reduce-motion *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 3px solid color-mix(in srgb, var(--icegram-accent) 70%, white); outline-offset: 2px; }
